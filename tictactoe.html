@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIC TAC TOE</title>
+    <link rel="stylesheet" href="tictactoe.css">
+</head>
+<body>
+    <audio id="humanTurnSound" src="game.wav"></audio>
+    <audio id="aiTurnSound" src="game.wav"></audio>
+
+<div style="justify-self: center;">
+    <h1>DIRECTION:</h1>
+    <p style="color: white; font-size: 50px; margin-bottom: 10px; text-align: center;">First to get 5 points win</p>
+   
+   <div style="
+">
+        <p style="color: white;font-size: 40px;margin-top: 25px;text-align: center;margin-bottom: .5px;">Score:</p>
+        <div style="display: flex;justify-content: center;align-items: center;">
+            <p style="color: white;font-size: 45px;margin-right: 10px;">X: <span id="scoreX">0</span></p>
+        <p style="color: white;font-size: 45px;">O: <span id="scoreO">0</span></p>
+
+        </div>
+    </div>
+    <div style="
+        text-align: center;
+        margin-top: 15px;
+    ">
+        <select id="category">
+            <option value="Easy">Easy</option>
+            <option value="Difficult">Difficult</option>
+            <option value="Expert">Expert</option>
+        </select>
+ 
+        <div style="margin-top: 10px;">
+            <select id="players">
+                <option value="AIvsHuman">AI vs Human</option>
+                <option value="HumanvsHuman">Human vs Human</option>
+            </select>
+        </div>
+    </div>
+</div>
+ 
+<div class="container" style="">
+    <div id="game-container">
+        <div id="board" class="board">
+            <!-- The game board will be dynamically generated here -->
+        </div>
+    </div>
+   
+    <button id="reset-button" onclick="resetGame()" style="
+        color: white;
+        margin-top: 25px;
+        font-weight: 900;
+        background: border-box;
+        animation: glow 2s infinite;
+        border-radius: 2px;
+        width: 150px;
+        height: 50px;
+        border-image: linear-gradient(to right, #EBC1EE, #605399);
+    ">Reset Game</button>
+</div>
+
+<footer style="text-align: center; background-color: transparent; color: white; padding: 20px; margin-bottom: -20px;">
+    <h4>Members</h4>
+    <p>• Allyssa Gallo  • Mary Joy Reano<br>• Beverly Bernardino  • Edward Cristobal <br> • John Mark Oliveros</p> 
+    
+</footer>
+ 
+ 
+<script>
+   const humanTurnSound = document.getElementById('humanTurnSound');
+    const aiTurnSound = document.getElementById('aiTurnSound');
+
+const rows = 5;
+const columns = 6;
+let currentPlayer = 'X';
+let gameBoard = Array.from({ length: rows }, () => Array(columns).fill(''));
+let scoreX = 0;
+let scoreO = 0;
+ 
+ 
+function createGameBoard() {
+    const boardElement = document.getElementById('board');
+ 
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < columns; j++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.setAttribute('data-row', i);
+            cell.setAttribute('data-col', j);
+            cell.addEventListener('click', handleCellClick);
+            boardElement.appendChild(cell);
+        }
+    }
+}
+ 
+function handleCellClick(event) {
+    const clickedCell = event.target;
+    const row = Number(clickedCell.getAttribute('data-row'));
+    const col = Number(clickedCell.getAttribute('data-col'));
+ 
+    if (gameBoard[row][col] === '') {
+        gameBoard[row][col] = currentPlayer;
+        clickedCell.textContent = currentPlayer;
+ 
+        if (checkForWinner(row, col)) {
+            // Delay the alert to ensure all letters are displayed
+            setTimeout(() => {
+                alert(`${currentPlayer} wins!`);
+                updateScores(currentPlayer);
+                resetGame();
+            }, 100);
+        } else {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+
+             // Check if the game mode is AI vs Human and it's the computer's turn
+             if (document.getElementById('players').value === 'AIvsHuman' && currentPlayer === 'O') {
+                aiTurnSound.play(); // Play AI turn sound
+                // Call a function for the computer's move
+                makeAIMove();
+            } else {
+                humanTurnSound.play(); // Play human turn sound
+                
+            }
+        }
+    }
+}
+
+function makeAIMove() {
+    aiTurnSound.play(); // Play AI turn sound
+    // More challenging AI logic based on difficulty level
+    // ... (rest of the makeAIMove function) ...
+}
+ 
+function checkForWinner(row, col) {
+    // Check horizontally
+    let countHorizontal = 0;
+    for (let i = 0; i < columns; i++) {
+        if (gameBoard[row][i] === currentPlayer) {
+            countHorizontal++;
+            if (countHorizontal >= 6) {
+                return true;
+            }
+        } else {
+            countHorizontal = 0;
+        }
+    }
+ 
+    // Check vertically
+    let countVertical = 0;
+    for (let i = 0; i < rows; i++) {
+        if (gameBoard[i][col] === currentPlayer) {
+            countVertical++;
+            if (countVertical >= 5) {
+                return true;
+            }
+        } else {
+            countVertical = 0;
+        }
+    }
+ 
+    // Check diagonally (top-left to bottom-right)
+    let countDiagonal1 = 0;
+    for (let i = -Math.min(row, col); i < Math.min(rows - row, columns - col); i++) {
+        if (gameBoard[row + i][col + i] === currentPlayer) {
+            countDiagonal1++;
+            if (countDiagonal1 >= 5) {
+                return true;
+            }
+        } else {
+            countDiagonal1 = 0;
+        }
+    }
+ 
+    if ((row === 1 && col === 0) || (row === 2 && col === 1) ||
+        (row === 3 && col === 2) || (row === 4 && col === 3)) {
+        let countDiagonal2 = 0;
+        for (let i = -Math.min(row, col); i < Math.min(rows - row, columns - col); i++) {
+            if (gameBoard[row + i][col + i] === currentPlayer) {
+                countDiagonal2++;
+                if (countDiagonal2 >= 4) {
+                    return true;
+                }
+            } else {
+                countDiagonal2 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 0 && col === 2) || (row === 1 && col === 3) ||
+        (row === 2 && col === 4) || (row === 3 && col === 5)) {
+        let countDiagonal3 = 0;
+        for (let i = -Math.min(row, col); i < Math.min(rows - row, columns - col); i++) {
+            if (gameBoard[row + i][col + i] === currentPlayer) {
+                countDiagonal3++;
+                if (countDiagonal3 >= 4) {
+                    return true;
+                }
+            } else {
+                countDiagonal3 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 0 && col === 3) || (row === 1 && col === 4) ||
+        (row === 2 && col === 5)) {
+        let countDiagonal4 = 0;
+        for (let i = -Math.min(row, col); i < Math.min(rows - row, columns - col); i++) {
+            if (gameBoard[row + i][col + i] === currentPlayer) {
+                countDiagonal4++;
+                if (countDiagonal4 >= 3) {
+                    return true;
+                }
+            } else {
+                countDiagonal4 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 0 && col === 4) || (row === 1 && col === 5)) {
+        let countDiagonal5 = 0;
+        for (let i = -Math.min(row, col); i < Math.min(rows - row, columns - col); i++) {
+            if (gameBoard[row + i][col + i] === currentPlayer) {
+                countDiagonal5++;
+                if (countDiagonal5 >= 2) {
+                    return true;
+                }
+            } else {
+                countDiagonal5 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 3 && col === 0) || (row === 4 && col === 1)) {
+        let countDiagonal6 = 0;
+        for (let i = -Math.min(row, col); i < Math.min(rows - row, columns - col); i++) {
+            if (gameBoard[row + i][col + i] === currentPlayer) {
+                countDiagonal6++;
+                if (countDiagonal6 >= 2) {
+                    return true;
+                }
+            } else {
+                countDiagonal6 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 2 && col === 0) || (row === 3 && col === 1) || (row === 4 && col === 2)) {
+        let countDiagonal7 = 0;
+        for (let i = -Math.min(row, col); i < Math.min(rows - row, columns - col); i++) {
+            if (gameBoard[row + i][col + i] === currentPlayer) {
+                countDiagonal7++;
+                if (countDiagonal7 >= 3) {
+                    return true;
+                }
+            } else {
+                countDiagonal7 = 0;
+            }
+        }
+    }
+    // Check diagonally (top-right to bottom-left)
+    let countDiagonal8 = 0;
+    for (let i = -Math.min(row, columns - col - 1); i < Math.min(rows - row, col + 1); i++) {
+        if (gameBoard[row + i][col - i] === currentPlayer) {
+            countDiagonal8++;
+            if (countDiagonal8 >= 5) {
+                return true;
+            }
+        } else {
+            countDiagonal8 = 0;
+        }
+    }
+ 
+    if ((row === 0 && col === 1) || (row === 1 && col === 0)) {
+        let countDiagonal9 = 0;
+        for (let i = -Math.min(row, columns - col - 1); i < Math.min(rows - row, col + 1); i++) {
+            if (gameBoard[row + i][col - i] === currentPlayer) {
+                countDiagonal9++;
+                if (countDiagonal9 >= 2) {
+                    return true;
+                }
+            } else {
+                countDiagonal9 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 0 && col === 2) || (row === 1 && col === 1) || (row === 2 && col === 0)) {
+        let countDiagonal10 = 0;
+        for (let i = -Math.min(row, columns - col - 1); i < Math.min(rows - row, col + 1); i++) {
+            if (gameBoard[row + i][col - i] === currentPlayer) {
+                countDiagonal10++;
+                if (countDiagonal10 >= 3) {
+                    return true;
+                }
+            } else {
+                countDiagonal10 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 0 && col === 3) || (row === 1 && col === 2) || (row === 2 && col === 1) || (row === 3 && col === 0)) {
+        let countDiagonal11 = 0;
+        for (let i = -Math.min(row, columns - col - 1); i < Math.min(rows - row, col + 1); i++) {
+            if (gameBoard[row + i][col - i] === currentPlayer) {
+                countDiagonal11++;
+                if (countDiagonal11 >= 4) {
+                    return true;
+                }
+            } else {
+                countDiagonal11 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 1 && col === 5) || (row === 2 && col === 4) || (row === 3 && col === 3) || (row === 4 && col === 2)) {
+        let countDiagonal12 = 0;
+        for (let i = -Math.min(row, columns - col - 1); i < Math.min(rows - row, col + 1); i++) {
+            if (gameBoard[row + i][col - i] === currentPlayer) {
+                countDiagonal12++;
+                if (countDiagonal12 >= 4) {
+                    return true;
+                }
+            } else {
+                countDiagonal12 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 2 && col === 5) || (row === 3 && col === 4) || (row === 4 && col === 3)) {
+        let countDiagonal13 = 0;
+        for (let i = -Math.min(row, columns - col - 1); i < Math.min(rows - row, col + 1); i++) {
+            if (gameBoard[row + i][col - i] === currentPlayer) {
+                countDiagonal13++;
+                if (countDiagonal13 >= 3) {
+                    return true;
+                }
+            } else {
+                countDiagonal13 = 0;
+            }
+        }
+    }
+ 
+    if ((row === 3 && col === 5) || (row === 4 && col === 4)) {
+        let countDiagonal14 = 0;
+        for (let i = -Math.min(row, columns - col - 1); i < Math.min(rows - row, col + 1); i++) {
+            if (gameBoard[row + i][col - i] === currentPlayer) {
+                countDiagonal14++;
+                if (countDiagonal14 >= 2) {
+                    return true;
+                }
+            } else {
+                countDiagonal14 = 0;
+            }
+        }
+    }
+ 
+    let isDraw = true;
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < columns; j++) {
+            if (gameBoard[i][j] === '') {
+                isDraw = false;
+                break;
+            }
+        }
+        if (!isDraw) {
+            break;
+        }
+    }
+ 
+    if (isDraw) {
+        alert('It\'s a draw!');
+        resetGame();
+        return false; // No winner
+    }
+ 
+   
+    return false;
+}
+ 
+function makeAIMove() {
+    // More challenging AI logic based on difficulty level
+    let emptyCells = [];
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < columns; j++) {
+            if (gameBoard[i][j] === '') {
+                emptyCells.push({ row: i, col: j });
+              
+            }
+        }
+    }
+
+    
+ 
+    let winningMoves = [];
+
+    
+ 
+    if (emptyCells.length > 0) {
+        if (document.getElementById('category').value === 'Difficult') {     // Medium level
+            // Difficult Level: Prioritize center and edges
+            const centerAndEdges = emptyCells.filter(cell => (cell.row === 2 && cell.col === 2) || (cell.row % 2 === 0 && cell.col % 2 === 0));
+            const randomIndex = Math.floor(Math.random() * centerAndEdges.length);
+            const AIMove = centerAndEdges[randomIndex];
+            makeMoveAndUpdateDisplay(AIMove);
+ 
+ 
+ 
+ 
+        } else if (document.getElementById('category').value === 'Expert') {     // hard level
+            // Expert Level: Prioritize winning and blocking moves
+            for (let i = 0; i < emptyCells.length; i++) {
+                const testMove = emptyCells[i];
+                gameBoard[testMove.row][testMove.col] = 'O';
+                if (checkForWinner(testMove.row, testMove.col)) {
+                    // Winning move found, make the move and end the function
+                    makeMoveAndUpdateDisplay(testMove);
+                    updateScores('O');
+                    alert('O wins!');
+                    resetGame();
+                    return;
+                }
+                // Undo the test move
+                gameBoard[testMove.row][testMove.col] = '';
+            }
+ 
+            for (let i = 0; i < emptyCells.length; i++) {
+                const testMove = emptyCells[i];
+                gameBoard[testMove.row][testMove.col] = 'X';
+                if (checkForWinner(testMove.row, testMove.col)) {
+                    // Blocking move found, make the move and end the function
+                    makeMoveAndUpdateDisplay(testMove);
+                    currentPlayer = 'X'; // Switch back to player after blocking
+                    return;
+                }
+                // Undo the test move
+                gameBoard[testMove.row][testMove.col] = '';
+            }
+ 
+            // If no winning or blocking moves, make a random move
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            const AIMove = emptyCells[randomIndex];
+            makeMoveAndUpdateDisplay(AIMove);
+        } else {
+            // Default Level: Easy
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            const AIMove = emptyCells[randomIndex];
+            makeMoveAndUpdateDisplay(AIMove);
+        }
+    }
+}
+
+ 
+function makeMoveAndUpdateDisplay(move) {
+    gameBoard[move.row][move.col] = 'O';
+    const AICell = document.querySelector(`.cell[data-row="${move.row}"][data-col="${move.col}"]`);
+    AICell.textContent = 'O';
+ 
+    setTimeout(() => {
+        if (checkForWinner(move.row, move.col)) {
+            updateScores('O');
+            alert('O wins!');
+            resetGame();
+        } else {
+            currentPlayer = 'X';
+            
+        }
+    }, 100); // Adjust the delay time as needed
+}
+ 
+function updateScores(winner) {
+    if (winner === 'X') {
+        scoreX++;
+        document.getElementById('scoreX').textContent = scoreX;
+        if (scoreX === 5) {
+            alert('Player X wins the game!');
+            resetScoresAndGame();
+        }
+    } else if (winner === 'O') {
+        scoreO++;
+        document.getElementById('scoreO').textContent = scoreO;
+        if (scoreO === 5) {
+            alert('Player O wins the game!');
+            resetScoresAndGame();
+        }
+    }
+}
+ 
+function resetScoresAndGame() {
+    scoreX = 0;
+    scoreO = 0;
+    document.getElementById('scoreX').textContent = scoreX;
+    document.getElementById('scoreO').textContent = scoreO;
+    resetGame();
+}
+ 
+function resetGame() {
+    gameBoard = Array.from({ length: rows }, () => Array(columns).fill(''));
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        cell.textContent = '';
+    });
+    currentPlayer = 'X';
+
+    
+}
+
+
+ 
+ 
+ 
+// Initialize the game board
+createGameBoard();
+ 
+</script>
+
+</body>
+</html>
